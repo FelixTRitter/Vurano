@@ -1,0 +1,413 @@
+/* Ergänzungen zum 1:1 übernommenen Immo-Control-Stylesheet (style.css):
+   nur, was das ERP zusätzlich braucht. Basis-Optik bleibt unangetastet. */
+
+/* Suchfeld in der Topbar */
+.topbar-search {
+  width: 260px;
+  padding: 7px 12px;
+  border: 0.5px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius, 8px);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+}
+.topbar-search::placeholder { color: rgba(255, 255, 255, 0.65); }
+.topbar-search:focus { background: rgba(255, 255, 255, 0.2); border-color: rgba(255, 255, 255, 0.5); }
+
+/* Platzhalterseite für Module in Aufbau */
+.module-placeholder .empty-state { padding: 60px 20px; }
+
+/* --- Navigationsgruppen mit Submodulen --- */
+/* Gruppenkopf exakt wie ein normaler Nav-Link (gleiche Schriftgröße!) */
+.nav-group-head {
+  width: 100%;
+  background: none;
+  border: 0;
+  border-left: 3px solid transparent;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: inherit;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: left;
+}
+/* Geöffnete Gruppe: nur neutral grau hinterlegt (Aufspalt-Effekt) */
+.nav-group.open > .nav-group-head { background: var(--nav-open-bg); color: var(--text); }
+/* Grüner Balken NUR, wenn ein Submodul aktiv ist — er zeigt an,
+   was im MainContent sichtbar ist. */
+.nav-group.has-active > .nav-group-head {
+  background: #ececea;
+  color: var(--iv-primary);
+  font-weight: 600;
+  border-left-color: var(--iv-primary);
+}
+.nav-group.has-active > .nav-group-head .nav-icon { stroke: var(--iv-primary); }
+
+/* Submodule: fächern nach unten auf, grau hinterlegt wie beim Hover */
+.nav-sub { list-style: none; margin: 0; padding: 0; display: none; background: var(--nav-sub-bg); }
+.nav-group.open .nav-sub { display: block; }
+.nav-sub-link { padding-left: 46px !important; font-size: 13px; position: relative; }
+.nav-sub-link:hover { background: var(--nav-hover); }
+/* Aktives Submodul: grüner Punkt statt Balken */
+.nav-sub-link.active { border-left-color: transparent; background: var(--nav-sub-active-bg); }
+.nav-sub-link.active::before {
+  content: '';
+  position: absolute;
+  left: 31px; top: 50%;
+  transform: translateY(-50%);
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--iv-primary);
+}
+.app.nav-collapsed .nav-sub { display: none; }
+
+/* --- Seitennavigation: niemals horizontal scrollen --- */
+.sidebar { overflow-x: hidden; }
+.nav-link { min-width: 0; }
+.nav-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+
+/* --- Zwei gleichzeitig sichtbare, intern scrollbare Tabellen --- */
+.split-tables { display: flex; flex-direction: column; gap: 16px; height: calc(100vh - 230px); min-height: 320px; }
+.split-tables .tbl-card { display: flex; flex-direction: column; min-height: 0; flex: 1 1 50%; }
+.split-tables .tbl-card.tbl-card-small { flex: 0 1 35%; }
+.tbl-card h2 { font-size: 14px; font-weight: 600; margin: 0 0 8px; }
+.tbl-scroll { overflow-y: auto; min-height: 0; }
+.tbl-scroll table thead th { position: sticky; top: 0; background: var(--surface, #fff); z-index: 1; }
+
+/* --- Grunddaten in der zweiten Seitenleiste (Mitarbeiter-Detail) --- */
+.rail-back { display: flex; align-items: center; gap: 6px; background: none; border: none; color: var(--text-muted); font: inherit; font-size: 13px; cursor: pointer; padding: 0 0 12px; }
+.rail-back svg { width: 15px; height: 15px; }
+.rail-back:hover { color: var(--text); }
+.rail-basics .rail-name { font-size: 15px; font-weight: 650; margin-bottom: 2px; }
+.rail-basics .rail-sub { font-size: 12.5px; color: var(--text-muted); margin-bottom: 14px; }
+.rail-basics .kv { display: block; margin-bottom: 10px; }
+.rail-basics .kv-label { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--text-muted); }
+.rail-basics .kv-value { font-size: 13.5px; }
+
+/* --- Abschnittstitel in Formular-Modals --- */
+.form-section { grid-column: 1 / -1; font-size: 12px; font-weight: 650; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); border-top: 0.5px solid var(--border); padding-top: 12px; margin-top: 4px; }
+.form-section:first-child { border-top: none; padding-top: 0; margin-top: 0; }
+
+/* --- Kompaktere Seitennavigation --- */
+/* Leichter Abstand des ersten Moduls zum Header */
+.sidebar { padding-top: 8px; }
+/* Module näher zusammen */
+.nav-link { padding-top: 6px; padding-bottom: 6px; }
+/* Submodule noch etwas näher */
+.nav-sub-link { padding-top: 4px; padding-bottom: 4px; }
+
+/* =========================================================================
+   THEMING: Führungsfarbe + Farbschemas
+   Die Führungsfarbe (Default: Vurano-Orange) setzt theme.ts zur Laufzeit
+   über --iv-primary; hier steht nur der statische Default, damit auch die
+   Anmeldeseite vor dem Laden der Benutzereinstellungen richtig aussieht.
+   ========================================================================= */
+:root {
+  --iv-primary: #F97316;
+  --iv-primary-hover: #DB6513;
+  /* Grautöne der Navigation als Variablen (für das Dunkel-Schema) */
+  --nav-hover: #ececea;
+  --nav-open-bg: #f2f2f0;
+  --nav-sub-bg: #f2f2f0;
+  --nav-sub-active-bg: #e8e8e5;
+}
+
+/* ---- Farbschema "dunkel" (angelehnt an die Vurano-Landingpage) ---- */
+[data-theme="dunkel"] {
+  --sidebar-bg:   #0d1a28;
+  --content-bg:   #0a1420;
+  --subtle-bg:    #12202f;
+  --white:        #12202f;
+  --card-bg:      #12202f;
+  --border:       #22344a;
+  --border-light: #1a2a3c;
+  --text:         #e8edf2;
+  --text-muted:   #93a5b8;
+  --text-light:   #6b7d90;
+  --positive-bg:  #0f2a1a;
+  --negative-bg:  #2f1414;
+  --nav-hover:         #16283a;
+  --nav-open-bg:       #10202f;
+  --nav-sub-bg:        #10202f;
+  --nav-sub-active-bg: #1a2c3f;
+}
+/* Topbar und Anmeldekarte im Dunkel-Schema: dunkles Navy statt Führungsfarbe */
+[data-theme="dunkel"] .topbar { background: #0b1622; border-bottom: 0.5px solid var(--border); }
+[data-theme="dunkel"] .nav-link:hover { background: var(--nav-hover); }
+[data-theme="dunkel"] .nav-link.active { background: var(--nav-hover); }
+[data-theme="dunkel"] body, [data-theme="dunkel"] input, [data-theme="dunkel"] select, [data-theme="dunkel"] textarea { color: var(--text); }
+[data-theme="dunkel"] input, [data-theme="dunkel"] select, [data-theme="dunkel"] textarea { background: #0d1a28; border-color: var(--border); }
+
+/* Anmeldeseite folgt dem Farbschema (Dunkel-Palette) */
+[data-theme="dunkel"] .auth-screen { background: var(--content-bg); }
+[data-theme="dunkel"] .auth-card { background: var(--card-bg); border-color: var(--border); }
+/* Logo-Bild in Topbar/Anmeldung */
+.brand-logo img { width: 100%; height: 100%; display: block; }
+.brand-logo.brand-logo-img { background: transparent; }
+/* "Angemeldet als ..." in der Topbar */
+.topbar-user { font-size: 12.5px; color: rgba(255,255,255,.85); white-space: nowrap; }
+[data-theme="dunkel"] .topbar-user { color: var(--text-muted); }
+
+/* Zeilen-Listen (Geschäftsführung, Bankverbindungen) im Modul Unternehmen */
+.liste-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.liste-row input { padding: 7px 10px; border: 0.5px solid var(--border); border-radius: var(--radius); min-width: 0; }
+.bank-std-label { white-space: nowrap; font-size: 12.5px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; }
+
+/* --- 2FA auf der Anmeldeseite --- */
+.auth-qr { display: flex; justify-content: center; margin: 14px 0 10px; }
+.auth-qr svg { width: 180px; height: 180px; background: #fff; padding: 8px; border-radius: 6px; border: 0.5px solid var(--border); }
+.auth-secret { font-size: 11.5px; color: var(--text-muted); text-align: center; word-break: break-all; margin: 0 0 12px; }
+.auth-merken { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); margin: 10px 0 14px; }
+.recovery-codes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 14px; font-family: ui-monospace, Consolas, monospace; font-size: 13.5px; background: var(--content-bg); border: 0.5px solid var(--border); border-radius: 6px; padding: 12px 16px; margin: 12px 0 16px; }
+
+/* --- Modals: Inhalt darf nie horizontal überlaufen (einheitlich für ALLE Modals) ---
+   Ursache des Überlaufs: Grid-Spalten mit "1fr" schrumpfen nicht unter die
+   Mindestbreite ihres Inhalts (Eingabefelder). minmax(0, 1fr) erlaubt das
+   Schrumpfen; width:100% + min-width:0 halten die Felder in ihrer Spalte.
+   Zusätzlich alle Modals moderat verbreitert (560 -> 640 px). */
+.modal { width: 640px; max-width: calc(100vw - 32px); }
+.modal-body { overflow-x: hidden; }
+.form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.field input, .field select, .field textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+
+/* Checkbox/Radio-Fix: die 100%-Breitenregel für Eingabefelder darf
+   Checkboxen nicht strecken (drückte das Label nach rechts weg). */
+.field input[type="checkbox"], .field input[type="radio"] { width: auto; min-width: auto; margin: 0; }
+.field label.chk { display: flex; align-items: center; gap: 7px; flex-direction: row; font-size: 13px; color: var(--text); margin: 0 0 4px; }
+.hinweis { font-weight: 400; font-size: 11px; color: var(--text-muted); }
+.field .hinweis { display: block; margin-top: 3px; }
+
+/* --- Personalakte: Dropzone, Dateizeilen, Ordner --- */
+.dropzone { border: 1.5px dashed var(--border); border-radius: var(--radius); padding: 18px; text-align: center; color: var(--text-muted); font-size: 13px; }
+.dropzone.drag, .card.drag { border-color: var(--iv-primary); background: color-mix(in srgb, var(--iv-primary) 6%, transparent); }
+.dropzone-link { color: var(--iv-primary); cursor: pointer; text-decoration: underline; }
+.datei-pending-liste { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.datei-chip { background: var(--subtle-bg); border: 0.5px solid var(--border); border-radius: 12px; padding: 2px 8px; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+.datei-chip button { border: none; background: none; cursor: pointer; color: var(--text-muted); font-size: 13px; padding: 0; }
+.dok-ordner { margin-bottom: 10px; }
+.dok-ordner-titel { font-size: 12.5px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+.dok-zeile { display: flex; align-items: center; gap: 10px; padding: 5px 0 5px 10px; border-bottom: 0.5px solid var(--border-light, var(--border)); }
+.dok-name { color: var(--text); text-decoration: none; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dok-name:hover { color: var(--iv-primary); text-decoration: underline; }
+.dok-groesse { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
+.dok-antrag { background: #fde8e8; color: #b3372c; }
+[data-theme="dunkel"] .dok-antrag { background: #3a1a1a; color: #f1998e; }
+
+/* Zweizeilige Labels (mit Hinweis) sollen die Eingabefelder der Zeile
+   nicht versetzen: Feldinhalt unten ausrichten -> Inputs stehen bündig. */
+.form-grid .field { justify-content: flex-end; }
+
+/* --- Adressschlüssel-Dropdown mit Chips (Kontaktformular) --- */
+.kat-picker { display: flex; flex-direction: column; gap: 8px; }
+.kat-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.kat-chip { background: color-mix(in srgb, var(--iv-primary) 12%, transparent); color: var(--text); border-radius: 12px; padding: 2px 10px; font-size: 12.5px; display: inline-flex; align-items: center; gap: 5px; }
+.kat-chip button { border: none; background: none; cursor: pointer; color: var(--text-muted); font-size: 14px; padding: 0; line-height: 1; }
+
+/* --- Reiter (Firmen-Detail) --- */
+.tabs { display: flex; gap: 4px; border-bottom: 0.5px solid var(--border); margin-bottom: 16px; }
+.tab { background: none; border: none; padding: 9px 16px; font-size: 13.5px; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -0.5px; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--iv-primary); border-bottom-color: var(--iv-primary); font-weight: 600; }
+
+/* --- Firmen-Detail: mittige vertikale Teilung --- */
+.firma-split { display: grid; grid-template-columns: 1fr 1fr; gap: var(--card-gap); align-items: start; }
+.firma-info { margin: 0; }
+/* rechte Seite: horizontal geteilt (oben Liste scrollbar, unten Detail) */
+.firma-partner { display: grid; grid-template-rows: minmax(140px, 40vh) 1fr; gap: var(--card-gap); min-height: 0; }
+.partner-liste-box { display: flex; flex-direction: column; border: 0.5px solid var(--border); border-radius: var(--radius); overflow: hidden; min-height: 0; }
+.partner-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 0.5px solid var(--border); font-size: 13px; font-weight: 600; background: var(--card-bg); }
+.partner-liste { overflow-y: auto; min-height: 0; }
+.partner-row { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; width: 100%; text-align: left; background: none; border: none; border-bottom: 0.5px solid var(--border-light, var(--border)); padding: 8px 12px; cursor: pointer; }
+.partner-row:hover { background: var(--nav-hover); }
+.partner-row.active { background: color-mix(in srgb, var(--iv-primary) 10%, transparent); }
+.partner-row-name { font-size: 13.5px; color: var(--text); }
+.partner-row-pos { font-size: 12px; color: var(--text-muted); }
+.partner-detail { border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px 16px; overflow-y: auto; min-height: 0; }
+.partner-detail-name { font-size: 15px; font-weight: 600; margin-bottom: 10px; }
+.partner-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+/* --- Detail-Ebene-2-Leiste (Kontakt-Detail) --- */
+.detail-rail { padding: 4px 2px; }
+.rail-back { display: flex; align-items: center; gap: 5px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12.5px; padding: 4px 0; margin-bottom: 12px; }
+.rail-back:hover { color: var(--iv-primary); }
+.rail-back svg { width: 15px; height: 15px; }
+.detail-rail .rail-title { font-size: 15px; font-weight: 600; line-height: 1.25; }
+.detail-rail .rail-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+@media (max-width: 900px) { .firma-split { grid-template-columns: 1fr; } }
+
+/* --- Firmen-Detail: alles in weißen Containern (Karten) --- */
+.firma-info-card { margin: 0; }
+.card-titel { font-size: 14px; margin: 0 0 12px; }
+.partner-liste-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; }
+.partner-liste-card .partner-head { padding: 12px 16px; border-bottom: 0.5px solid var(--border); margin: 0; }
+.partner-liste-card .card-titel { margin: 0; }
+.partner-liste-card .partner-liste { overflow-y: auto; min-height: 0; }
+.partner-detail-card { min-height: 0; overflow-y: auto; }
+.partner-detail-card .partner-detail-inner { padding: 0; }
+/* die Kartenränder ersetzen die früheren nackten Rahmen */
+.firma-partner .partner-liste-box, .firma-partner .partner-detail { border: none; }
+
+/* Ansprechpartner-Zeilen klar interaktiv (Führungsfarbe) */
+.partner-row { border-left: 2px solid transparent; transition: background .12s, border-color .12s; }
+.partner-row:hover { background: color-mix(in srgb, var(--iv-primary) 8%, transparent); }
+.partner-row.active { background: color-mix(in srgb, var(--iv-primary) 12%, transparent); border-left-color: var(--iv-primary); }
+.partner-row-name { color: var(--text); font-weight: 500; }
+
+/* Ansprechpartner-Karten explizit weiß (Karten-Hintergrund), Header inklusive */
+.partner-liste-card, .partner-detail-card { background: var(--card-bg); }
+.partner-liste-card .partner-head { background: var(--card-bg); }
+
+/* Ansprechpartner-Suche (im Firmen-Detail) */
+.partner-such { padding: 8px 12px 0; }
+.partner-suche { width: 100%; box-sizing: border-box; padding: 6px 10px; font-size: 13px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--card-bg); color: var(--text); }
+.partner-suche:focus { outline: none; border-color: var(--iv-primary); }
+
+/* Durchsuchbarer Auswahl-Picker in Zuordnungs-Modals */
+.pick-suche { width: 100%; box-sizing: border-box; padding: 7px 10px; font-size: 13px; border: 0.5px solid var(--border); border-radius: var(--radius); background: var(--card-bg); color: var(--text); }
+.pick-suche:focus { outline: none; border-color: var(--iv-primary); }
+.pick-liste { max-height: 220px; overflow-y: auto; border: 0.5px solid var(--border); border-radius: var(--radius); margin-top: 8px; }
+.pick-row { display: block; width: 100%; text-align: left; background: none; border: none; border-bottom: 0.5px solid var(--border-light, var(--border)); padding: 8px 12px; font-size: 13.5px; color: var(--text); cursor: pointer; }
+.pick-row:last-child { border-bottom: none; }
+.pick-row:hover { background: color-mix(in srgb, var(--iv-primary) 8%, transparent); }
+.pick-row.active { background: color-mix(in srgb, var(--iv-primary) 14%, transparent); border-left: 2px solid var(--iv-primary); font-weight: 500; }
+.pick-leer { color: var(--text-muted); font-size: 13px; padding: 10px 12px; margin: 0; }
+
+/* --- Adressverwaltung: Suchleiste immer sichtbar, nur die Tabelle scrollt --- */
+/* Wenn diese Seite aktiv ist, scrollt der MainContent NICHT selbst — er wird
+   zum Flex-Container; nur die Tabelle darin scrollt. So gibt es keinen
+   doppelten Scrollbalken und die Höhe passt exakt zum sichtbaren Bereich. */
+.content:has(.kontakte-page) { overflow: hidden; display: flex; }
+.kontakte-page {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;      /* erlaubt, dass die Tabelle innen scrollt statt außen */
+  width: 100%;
+}
+.kontakte-page .page-header,
+.kontakte-page .filter-bar { flex: 0 0 auto; }         /* bleiben fest oben */
+.kontakte-page .tbl-wrap {
+  flex: 1 1 auto;
+  min-height: 0;                                        /* erlaubt das Schrumpfen für den Scroll */
+  overflow-y: auto;                                     /* NUR die Tabelle scrollt (vertikal) */
+  overflow-x: auto;                                     /* bei schmalem Fenster horizontal scrollen statt quetschen */
+}
+/* Tabellenkopf klebt beim Scrollen oben */
+.kontakte-page .tbl-wrap table.data thead th {
+  position: sticky;
+  top: 0;
+  background: var(--card-bg);
+  z-index: 2;
+}
+/* Der leere Zustand (Karte) soll nicht die ganze Höhe strecken */
+.kontakte-page .card { flex: 0 0 auto; }
+
+/* Zweizeilige Firmierung: kompaktes Textarea wie ein Eingabefeld */
+.firmierung-input { resize: vertical; min-height: 2.4em; line-height: 1.35; font-family: inherit; }
+
+/* --- Adressverwaltung: Spaltenbreiten (Adressschlüssel/E-Mail/Telefon breiter, Name schmäler) --- */
+#tbl-kontakte { table-layout: fixed; min-width: 860px; }
+#tbl-kontakte thead th { white-space: nowrap; }   /* Titel + Sortierpfeil bleiben einzeilig */
+#tbl-kontakte .cg-typ   { width: 78px; }
+#tbl-kontakte .cg-name  { width: 24%; min-width: 190px; } /* geschützt: gibt beim Verkleinern nicht als Erstes nach */
+#tbl-kontakte .cg-kat   { width: 172px; }          /* Chip + Sortierpfeil, aber nicht übermäßig breit */
+#tbl-kontakte .cg-ort   { width: 12%; }
+#tbl-kontakte .cg-email { width: 17%; }            /* etwas schmäler */
+#tbl-kontakte .cg-tel   { width: 14%; }
+#tbl-kontakte .cg-akt   { width: 104px; }
+/* Zellinhalte, die überlaufen könnten, sauber kürzen statt umbrechen */
+#tbl-kontakte td.col-email, #tbl-kontakte td:nth-child(5),
+#tbl-kontakte td:nth-child(4) { overflow: hidden; text-overflow: ellipsis; }
+
+/* --- Adress-Autovervollständigung (Vorschlagsliste unter dem Straßenfeld) --- */
+.adr-vorschlaege {
+  position: absolute; left: 0; right: 0; top: 100%; z-index: 30;
+  background: var(--card-bg); border: 0.5px solid var(--border);
+  border-radius: var(--radius); margin-top: 3px; overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.10); max-height: 240px; overflow-y: auto;
+}
+.adr-item {
+  display: block; width: 100%; text-align: left; background: none; border: none;
+  border-bottom: 0.5px solid var(--border-light, var(--border));
+  padding: 8px 11px; font-size: 13px; color: var(--text); cursor: pointer;
+}
+.adr-item:last-child { border-bottom: none; }
+.adr-item:hover, .adr-item.active { background: color-mix(in srgb, var(--iv-primary) 10%, transparent); }
+
+/* --- Rollen-Detail: Modul-Rechte (Checkboxen nach Gruppen) --- */
+.rechte-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
+.rechte-gruppe-titel { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 600; margin-bottom: 8px; }
+.rechte-zeile { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13.5px; cursor: pointer; }
+.rechte-zeile input[disabled] { cursor: not-allowed; }
+
+/* --- CRUD-Dokumentation --- */
+.cd-tabelle { width: 100%; }
+.cd-aktion { display: inline-block; padding: 1px 8px; border-radius: 10px; font-size: 11.5px; font-weight: 600; }
+.cd-create { background: color-mix(in srgb, #16a34a 16%, transparent); color: #15803d; }
+.cd-update { background: color-mix(in srgb, var(--iv-primary) 16%, transparent); color: var(--iv-primary); }
+.cd-delete { background: color-mix(in srgb, var(--negative) 16%, transparent); color: var(--negative); }
+.cd-diff { margin: 0; padding: 10px 14px; background: var(--subtle-bg); border-radius: var(--radius); font-size: 12.5px; white-space: pre-wrap; font-family: ui-monospace, Consolas, monospace; }
+.cd-zeile { cursor: default; }
+
+/* --- Stammdaten: zwei Karten nebeneinander --- */
+.stamm-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--card-gap); }
+.card-title { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+
+/* --- Qualifikationen-Mehrfachauswahl (Chips mit Checkbox) --- */
+.qual-auswahl { display: flex; flex-wrap: wrap; gap: 8px; }
+.qual-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 0.5px solid var(--border); border-radius: 16px; font-size: 13px; cursor: pointer; user-select: none; }
+.qual-chip:has(input:checked) { background: color-mix(in srgb, var(--iv-primary) 14%, transparent); border-color: var(--iv-primary); }
+
+/* --- Mitarbeiter-Detail: Label/Wert-Zeilen im MainContent (verhindert Überlagerung) --- */
+.detail-kv .kv {
+  display: grid;
+  grid-template-columns: 220px 1fr;   /* feste Label-Spalte, Wert füllt den Rest */
+  gap: 16px;
+  align-items: start;
+  padding: 9px 0;
+  border-bottom: 0.5px solid var(--border-light, var(--border));
+}
+.detail-kv .kv:last-child { border-bottom: none; }
+.detail-kv .kv-label { color: var(--text-muted); font-size: 13px; line-height: 1.4; }
+.detail-kv .kv-value { font-size: 13.5px; line-height: 1.4; word-break: break-word; }
+@media (max-width: 640px) {
+  .detail-kv .kv { grid-template-columns: 1fr; gap: 2px; }  /* schmal: Wert unter das Label */
+}
+
+/* --- Zweite Navigation: Qualifikations-Chips vom Label abrücken --- */
+.rail-basics .kv-value .badge { margin-top: 2px; }
+.rail-basics .kv-label { margin-bottom: 5px; }
+
+/* --- Zahlenspalten in Tabellen: rechtsbündig, Ziffern gleich breit --- */
+.data th.num, .data td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* --- Grosse Textfelder (Verkaufs-/LV-Text): mehr Platz zum Schreiben --- */
+.txt-gross { min-height: 180px; resize: vertical; line-height: 1.45; font-family: inherit; }
+
+/* --- Artikeldetail: Texte je Sprache (Verkaufstext | LV-Text nebeneinander) --- */
+.texte-kopf { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.texte-aktionen { display: flex; align-items: center; gap: 8px; }
+.texte-aktionen select { padding: 6px 10px; border: 0.5px solid var(--border); border-radius: var(--radius); }
+.texte-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 900px) { .texte-grid { grid-template-columns: 1fr; } }
+.txt-hinweis { padding: 8px 12px; border-radius: var(--radius); font-size: 13px; margin-bottom: 12px; }
+.txt-hinweis.info   { background: var(--subtle-bg); color: var(--text-muted); }
+.txt-hinweis.warn   { background: color-mix(in srgb, #f59e0b 16%, transparent); color: #92400e; }
+.txt-hinweis.fehler { background: color-mix(in srgb, var(--negative) 14%, transparent); color: var(--negative); }
+
+
+/* --- Raster, die Karten SELBST anordnen, regeln den Abstand über gap.
+       Dort darf die globale Regel .card + .card keinen zusätzlichen Rand
+       erzeugen (sonst rutscht die zweite Karte im Raster nach unten). --- */
+.firma-split > .card + .card,
+.firma-partner > .card + .card,
+.stamm-grid > .card + .card { margin-top: 0; }
+
+/* --- Artikeldetail: Textfelder gross genug für lange Angebotstexte.
+       Feste Höhe statt min-height, damit das Feld selbst scrollt, statt die
+       ganze Seite zu strecken — Angebotstexte können mehrere Seiten lang sein.
+       Aufziehen bleibt möglich (resize: vertical aus .txt-gross). --- */
+.txt-detail { height: 440px; overflow-y: auto; }
+@media (max-height: 800px) { .txt-detail { height: 340px; } }

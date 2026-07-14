@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vurano ERP</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="stylesheet" href="/src/erp.css" />
+</head>
+<body>
+
+  <!-- Sichtbarer Fehler-Banner (für Diagnose im Browser) -->
+  <div id="fatal-error" class="fatal-error" hidden></div>
+
+  <!-- ============ AUTH-SCREEN (Login) ============ -->
+  <div id="auth-screen" class="auth-screen" hidden>
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="brand-logo brand-logo-img"><img src="/favicon.svg" alt="Vurano"></span>
+        <span class="brand-name">Vurano ERP</span>
+      </div>
+      <h1 id="auth-title" class="auth-title">Anmelden</h1>
+      <p id="auth-subtitle" class="auth-subtitle">Bitte melden Sie sich an.</p>
+
+      <div id="auth-error" class="alert alert-error" hidden></div>
+
+      <!-- Schritt 1: Benutzername + Passwort -->
+      <div id="auth-step-login">
+        <label class="auth-label">Benutzername</label>
+        <input id="auth-username" class="auth-input" type="email" autocomplete="username" />
+        <label class="auth-label">Passwort</label>
+        <input id="auth-password" class="auth-input" type="password" autocomplete="current-password" />
+        <button id="auth-submit" class="btn btn-primary auth-submit">Anmelden</button>
+      </div>
+
+      <!-- Schritt 2a: Code-Eingabe (2FA bereits eingerichtet) -->
+      <div id="auth-step-code" hidden>
+        <p class="auth-subtitle">Sechsstelliger Code aus Ihrer Authenticator-App — oder ein Wiederherstellungscode.</p>
+        <label class="auth-label">Code</label>
+        <input id="auth-code" class="auth-input" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" />
+        <label class="chk auth-merken"><input type="checkbox" id="auth-code-merken" /> Dieses Gerät 30 Tage merken</label>
+        <button id="auth-code-submit" class="btn btn-primary auth-submit">Bestätigen</button>
+      </div>
+
+      <!-- Schritt 2b: Ersteinrichtung (Pflicht beim ersten Login) -->
+      <div id="auth-step-setup" hidden>
+        <p class="auth-subtitle">Zwei-Faktor-Authentifizierung einrichten: QR-Code mit einer Authenticator-App scannen (z. B. Microsoft/Google Authenticator), dann den angezeigten Code eingeben.</p>
+        <div id="auth-qr" class="auth-qr"></div>
+        <p class="auth-secret">Manuelle Eingabe: <code id="auth-secret"></code></p>
+        <label class="auth-label">Code aus der App</label>
+        <input id="auth-setup-code" class="auth-input" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" />
+        <label class="chk auth-merken"><input type="checkbox" id="auth-setup-merken" /> Dieses Gerät 30 Tage merken</label>
+        <button id="auth-setup-submit" class="btn btn-primary auth-submit">Aktivieren</button>
+      </div>
+
+      <!-- Schritt 3: Wiederherstellungscodes (nur Admins, einmalige Anzeige) -->
+      <div id="auth-step-recovery" hidden>
+        <p class="auth-subtitle"><strong>Wiederherstellungscodes</strong> — einmalige Anzeige! Drucken oder sicher ablegen. Jeder Code funktioniert genau einmal als Ersatz für die App (z. B. bei Handyverlust).</p>
+        <div id="auth-recovery-codes" class="recovery-codes"></div>
+        <button id="auth-recovery-weiter" class="btn btn-primary auth-submit">Ich habe die Codes gesichert</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ APP ============ -->
+  <div id="app" class="app" hidden>
+
+    <!-- Topbar: Firmenname · Suche · Usereinstellungen · Arbeitszeit · Logout -->
+    <header class="topbar">
+      <div class="topbar-brand">
+        <button class="icon-btn" id="btn-nav-toggle" title="Navigation ein-/ausklappen" aria-label="Navigation umschalten">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <span class="brand-logo brand-logo-img" id="firm-logo"><img src="/favicon.svg" alt="Vurano"></span>
+        <span class="brand-name" id="firm-name">Vurano ERP</span>
+      </div>
+      <div class="topbar-actions">
+        <input type="search" id="global-suche" class="topbar-search" name="erp-suche" autocomplete="off" placeholder="Suche …" />
+        <span class="topbar-user" id="whoami"></span>
+        <button class="icon-btn" id="btn-user-settings" title="Usereinstellungen">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-arbeitszeit" title="Arbeitszeitanmeldung">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </button>
+        <button class="icon-btn" id="btn-logout" title="Abmelden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Layout: Sidebar + Content -->
+    <div class="layout">
+      <nav class="sidebar">
+        <ul class="nav-list">
+          <li>
+            <a href="#dashboard" class="nav-link" data-page="dashboard">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <span class="nav-label">Dashboard</span>
+            </a>
+          </li>
+          <li class="nav-group" data-group="vertrieb">
+            <button class="nav-link nav-group-head" type="button">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              <span class="nav-label">Vertrieb</span>
+            </button>
+            <ul class="nav-sub">
+              <li><a href="#verkaufsartikel" class="nav-link nav-sub-link" data-page="verkaufsartikel"><span class="nav-label">Verkaufsartikelstamm</span></a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#teilestamm" class="nav-link" data-page="teilestamm">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              <span class="nav-label">Teilestamm</span>
+            </a>
+          </li>
+          <li>
+            <a href="#projektabwicklung" class="nav-link" data-page="projektabwicklung">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
+              <span class="nav-label">Projektabwicklung</span>
+            </a>
+          </li>
+          <li>
+            <a href="#materialwirtschaft" class="nav-link" data-page="materialwirtschaft">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16.5 9.4 7.55 4.24"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/></svg>
+              <span class="nav-label">Materialwirtschaft</span>
+            </a>
+          </li>
+          <li>
+            <a href="#produktionsplanung" class="nav-link" data-page="produktionsplanung">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8l-7 5V8l-7 5V4a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2z"/><path d="M17 18h1"/><path d="M12 18h1"/><path d="M7 18h1"/></svg>
+              <span class="nav-label">Produktionsplanung</span>
+            </a>
+          </li>
+          <li>
+            <a href="#warenlieferung" class="nav-link" data-page="warenlieferung">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
+              <span class="nav-label">Warenlieferung</span>
+            </a>
+          </li>
+          <li>
+            <a href="#montageverwaltung" class="nav-link" data-page="montageverwaltung">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>
+              <span class="nav-label">Montageverwaltung</span>
+            </a>
+          </li>
+          <li>
+            <a href="#service" class="nav-link" data-page="service">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.6 2.6-2.4-.6-.6-2.4 2.6-2.6z"/></svg>
+              <span class="nav-label">Service</span>
+            </a>
+          </li>
+          <li class="nav-spacer" aria-hidden="true"></li>
+          <li>
+            <a href="#kontakte" class="nav-link" data-page="kontakte">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <span class="nav-label">Adressverwaltung</span>
+            </a>
+          </li>
+          <li class="nav-group" data-group="mitarbeiterverwaltung">
+            <button class="nav-link nav-group-head" type="button">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="4"/><path d="M14 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><path d="M21.6 7.6a2.1 2.1 0 0 0-3 0l-.35.35-.35-.35a2.1 2.1 0 0 0-3 3l3.35 3.35 3.35-3.35a2.1 2.1 0 0 0 0-3z"/></svg>
+              <span class="nav-label">Mitarbeiterverwaltung</span>
+            </button>
+            <ul class="nav-sub">
+              <li><a href="#mitarbeiter" class="nav-link nav-sub-link" data-page="mitarbeiter"><span class="nav-label">Mitarbeiter</span></a></li>
+              <li><a href="#arbeitszeitmodelle" class="nav-link nav-sub-link" data-page="arbeitszeitmodelle"><span class="nav-label">Arbeitszeitmodelle</span></a></li>
+            </ul>
+          </li>
+          <li class="nav-group" data-group="stammdaten">
+            <button class="nav-link nav-group-head" type="button">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7v10c0 2 1.5 3 4 3h8c2.5 0 4-1 4-3V7"/><path d="M4 7c0-2 1.5-3 4-3h8c2.5 0 4 1 4 3"/><path d="M4 7c0 2 1.5 3 4 3h8c2.5 0 4-1 4-3"/><line x1="12" y1="10" x2="12" y2="20"/></svg>
+              <span class="nav-label">Stammdaten</span>
+            </button>
+            <ul class="nav-sub">
+              <li><a href="#unternehmen" class="nav-link nav-sub-link" data-page="unternehmen"><span class="nav-label">Unternehmen</span></a></li>
+              <li><a href="#qualifikationen" class="nav-link nav-sub-link" data-page="qualifikationen"><span class="nav-label">Qualifikationen</span></a></li>
+              <li><a href="#einheiten" class="nav-link nav-sub-link" data-page="einheiten"><span class="nav-label">Einheiten</span></a></li>
+              <li><a href="#sprachen" class="nav-link nav-sub-link" data-page="sprachen"><span class="nav-label">Sprachen</span></a></li>
+            </ul>
+          </li>
+          <li class="nav-group" data-group="systemverwaltung">
+            <button class="nav-link nav-group-head" type="button">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+              <span class="nav-label">Systemverwaltung</span>
+            </button>
+            <ul class="nav-sub">
+              <li><a href="#users" class="nav-link nav-sub-link" data-page="users"><span class="nav-label">User Verwaltung</span></a></li>
+              <li><a href="#rollen" class="nav-link nav-sub-link" data-page="rollen"><span class="nav-label">Zugriffsrollen</span></a></li>
+              <li><a href="#crud-doku" class="nav-link nav-sub-link" data-page="crud-doku"><span class="nav-label">CRUD-Dokumentation</span></a></li>
+            </ul>
+          </li>
+          <li>
+            <a href="#einstellungen" class="nav-link" data-page="einstellungen">
+              <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <span class="nav-label">Einstellungen</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <div class="workspace">
+        <aside class="context-panel rail-off" id="context-panel"></aside>
+        <aside class="context-panel rail-off" id="context-panel-2"></aside>
+        <main class="content" id="content">
+          <!-- Seiteninhalt wird von main.ts gerendert -->
+        </main>
+      </div>
+    </div>
+
+    <!-- Footer: Impressum + Versionsnummer -->
+    <footer class="footer">
+      <span class="footer-impressum">Impressum</span>
+      <span class="footer-credits">Vurano ERP · <span id="app-version"></span></span>
+    </footer>
+  </div>
+
+  <script src="/vendor/qrcode.js"></script>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
